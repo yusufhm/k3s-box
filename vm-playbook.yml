@@ -2,46 +2,10 @@
 - hosts: all
   become: yes
   tasks:
-
-    - name: check if k3s already exists
-      stat:
-        path: /usr/local/bin/k3s
-      register: k3s_bin
-
-    - name: download k3s installer
-      get_url:
-        url: https://get.k3s.io
-        dest: /tmp/k3s-installer
-        mode: '0770'
-      when: k3s_bin.stat.exists == false
-
     - name: install k3s
-      shell: /tmp/k3s-installer
-      args:
-        creates: /usr/local/bin/k3s
-      register: k3s_install_result
+      include_tasks: tasks/install-k3s.yml
 
-    - name: remove k3s installer
-      file:
-        path: /tmp/k3s-installer
-        state: absent
-
-    - debug: var=k3s_install_result.stdout_lines
-      when: k3s_install_result.changed == true
-
-    - name: get cluster info
-      shell: kubectl cluster-info
-      register: cluster_result
-
-    - debug: var=cluster_result.stdout_lines
-
-    - name: get list of pods
-      shell: kubectl get pods -A
-      register: pods_result
-
-    - debug: var=pods_result.stdout_lines
-
-    - name: get ip addresses
+    - name: get ip address
       shell: ip address show eth1 | grep 'inet ' | sed -e 's/^.*inet //' -e 's/\/.*$//'
       register: ip_result
 
@@ -65,4 +29,5 @@
       become: false
       register: cluster_result_local
 
-    - debug: var=cluster_result_local.stdout_lines
+    - name: install k8s dashboard
+      include_tasks: tasks/install-dashboard.yml

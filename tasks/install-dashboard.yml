@@ -1,0 +1,82 @@
+- name: fetch dashboard deployments
+  set_fact:
+    dashboard_deployments: "{{ lookup(
+      'kubernetes.core.k8s',
+      kind='Deployment',
+      namespace='kubernetes-dashboard',
+      kubeconfig='.kubeconfig/k3s.yaml'
+    ) }}"
+
+# The following steps follow instructions from
+# https://rancher.com/docs/k3s/latest/en/installation/kube-dashboard/
+
+- name: set github url
+  set_fact:
+    github_url: 'https://github.com/kubernetes/dashboard/releases'
+  when: dashboard_deployments|length == 0
+
+- name: get kube dashboard version
+  shell:
+    cmd: curl -w '%{url_effective}' -I -L -s -S {{ github_url }}/latest -o /dev/null | sed -e 's|.*/||'
+    warn: false
+  register: kube_version_result
+  when: dashboard_deployments|length == 0
+
+- name: set kube dashboard version
+  set_fact:
+    kube_version: "{{ kube_version_result.stdout }}"
+  when: dashboard_deployments|length == 0
+
+- name: install pip
+  apt:
+    name: python3-pip
+    state: present
+    update_cache: yes
+  when: dashboard_deployments|length == 0
+
+- name: install the kubernetes library
+  pip:
+    name: kubernetes
+  when: dashboard_deployments|length == 0
+
+- name: download dashboard manifest to the cluster.
+  ansible.builtin.get_url:
+    url: "https://raw.githubusercontent.com/kubernetes/dashboard/{{ kube_version }}/aio/deploy/recommended.yaml"
+    dest: /tmp/kube-dashboard.yaml
+    mode: '0664'
+  when: dashboard_deployments|length == 0
+
+- name: apply dashboard manifest to the cluster.
+  kubernetes.core.k8s:
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+    state: present
+    src: /tmp/kube-dashboard.yaml
+  when: dashboard_deployments|length == 0
+
+- name: check if dashboard admin user exists
+  set_fact:
+    dashboard_service_accounts: "{{ lookup(
+      'kubernetes.core.k8s',
+      kind='ServiceAccount',
+      namespace='kubernetes-dashboard',
+      resource_name='admin-user',
+      kubeconfig='.kubeconfig/k3s.yaml'
+    ) }}"
+
+- debug: var=dashboard_service_accounts
+
+- name: deploy the admin-user service account configuration
+  kubernetes.core.k8s:
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+    state: present
+    # src: k8-configs/dashboard-admin-user.yml
+    definition: "{{ lookup('file', 'k8-configs/dashboard-admin-user-service-account.yml') | from_yaml }}"
+  when: dashboard_service_accounts|length == 0
+
+- name: deploy the admin-user cluster role binding configuration
+  kubernetes.core.k8s:
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+    state: present
+    # src: k8-configs/dashboard-admin-user.yml
+    definition: "{{ lookup('file', 'k8-configs/dashboard-admin-user-clusterrole-binding.yml') | from_yaml }}"
+  when: dashboard_service_accounts|length == 0

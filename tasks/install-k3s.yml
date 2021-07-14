@@ -1,0 +1,22 @@
+- name: check if k3s already exists
+  stat:
+    path: /usr/local/bin/k3s
+  register: k3s_bin
+
+- name: download k3s installer
+  get_url:
+    url: https://get.k3s.io
+    dest: /tmp/k3s-installer
+    mode: '0770'
+  when: k3s_bin.stat.exists == false
+
+- name: install k3s
+  shell: /tmp/k3s-installer
+  args:
+    creates: /usr/local/bin/k3s
+  register: k3s_install_result
+
+- name: remove k3s installer
+  file:
+    path: /tmp/k3s-installer
+    state: absent
