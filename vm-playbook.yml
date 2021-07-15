@@ -31,3 +31,10 @@
 
     - name: install k8s dashboard
       include_tasks: tasks/install-dashboard.yml
+
+    - name: install nginx app
+      kubernetes.core.k8s:
+        kubeconfig: /etc/rancher/k3s/k3s.yaml
+        state: present
+        definition: "{{ item }}"
+      loop: "{{ lookup('file', 'k8-configs/app.nginx.yml') | from_yaml_all | list }}"

@@ -69,3 +69,7 @@ kubectl proxy
 ```
 
 The dashboard is accessible at http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/
+
+## Next steps
+
+Apps are installed from `k8-configs/app.*.yml`. The `nginx` app, for instance, gets installed, complete with a hostname of `nginx.localvm`; in order to access it from the host, that hostname will need to be added to `/etc/hosts`, pointing to the `eth1` IP address of the VM.
