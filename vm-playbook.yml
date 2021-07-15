@@ -5,6 +5,8 @@
     - name: install k3s
       include_tasks: tasks/install-k3s.yml
 
+    # Leaving this in even though we're using static IP, because the IP could
+    # be changed in a Vagranfile.local.
     - name: get ip address
       shell: ip address show eth1 | grep 'inet ' | sed -e 's/^.*inet //' -e 's/\/.*$//'
       register: ip_result
