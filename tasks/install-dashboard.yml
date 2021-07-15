@@ -63,20 +63,10 @@
       kubeconfig='.kubeconfig/k3s.yaml'
     ) }}"
 
-- debug: var=dashboard_service_accounts
-
-- name: deploy the admin-user service account configuration
+- name: deploy the admin-user configuration
   kubernetes.core.k8s:
     kubeconfig: /etc/rancher/k3s/k3s.yaml
     state: present
-    # src: k8-configs/dashboard-admin-user.yml
-    definition: "{{ lookup('file', 'k8-configs/dashboard-admin-user-service-account.yml') | from_yaml }}"
-  when: dashboard_service_accounts|length == 0
-
-- name: deploy the admin-user cluster role binding configuration
-  kubernetes.core.k8s:
-    kubeconfig: /etc/rancher/k3s/k3s.yaml
-    state: present
-    # src: k8-configs/dashboard-admin-user.yml
-    definition: "{{ lookup('file', 'k8-configs/dashboard-admin-user-clusterrole-binding.yml') | from_yaml }}"
+    definition: "{{ item }}"
+  loop: "{{ lookup('file', 'k8-configs/dashboard-admin-user.yml') | from_yaml_all | list }}"
   when: dashboard_service_accounts|length == 0
