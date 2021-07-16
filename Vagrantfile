@@ -21,4 +21,5 @@ Vagrant.configure("2") do |config|
 end
 
 # Load local config.
-load 'Vagrantfile.local'
+local_vagrantfile = 'Vagrantfile.local'
+load local_vagrantfile if File.exist?(local_vagrantfile)

@@ -39,18 +39,18 @@ If not you'll need to manually specify the kubeconfig when running kubectl, for 
 ```sh
 kubectl --kubeconfig=.kubeconfig/k3s.yaml cluster-info
 ```
+or set the `KUBECONFIG` variable first
+```sh
+export KUBECONFIG=.kubeconfig/k3s.yaml
+kubectl cluster-info
+```
 
 To access the dashboard, first fetch the token for the admin user
 ```sh
 kubectl -n kubernetes-dashboard describe secret admin-user-token | grep '^token'
 ```
 
-Then start a proxy
-```sh
-kubectl proxy
-```
-
-The dashboard is accessible at http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/
+The dashboard is accessible at https://dashboard.k3svm/. See next steps on how to configure hosts for `.k3svm` to work.
 
 ## Next steps
 

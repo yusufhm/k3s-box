@@ -41,7 +41,7 @@
 
 - name: download dashboard manifest to the cluster.
   ansible.builtin.get_url:
-    url: "https://raw.githubusercontent.com/kubernetes/dashboard/{{ kube_version }}/aio/deploy/recommended.yaml"
+    url: "https://raw.githubusercontent.com/kubernetes/dashboard/{{ kube_version }}/aio/deploy/alternative.yaml"
     dest: /tmp/kube-dashboard.yaml
     mode: '0664'
   when: dashboard_deployments|length == 0
@@ -53,6 +53,11 @@
     src: /tmp/kube-dashboard.yaml
   when: dashboard_deployments|length == 0
 
+- name: remove dashboard manifest
+  file:
+    path: /tmp/kube-dashboard.yaml
+    state: absent
+
 - name: check if dashboard admin user exists
   set_fact:
     dashboard_service_accounts: "{{ lookup(
@@ -63,10 +68,10 @@
       kubeconfig='.kubeconfig/k3s.yaml'
     ) }}"
 
-- name: deploy the admin-user configuration
+- name: deploy additional dashboard configuration
   kubernetes.core.k8s:
     kubeconfig: /etc/rancher/k3s/k3s.yaml
     state: present
     definition: "{{ item }}"
-  loop: "{{ lookup('file', 'k8-configs/dashboard-admin-user.yml') | from_yaml_all | list }}"
+  loop: "{{ lookup('file', 'k8-configs/dashboard.yml') | from_yaml_all | list }}"
   when: dashboard_service_accounts|length == 0
