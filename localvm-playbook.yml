@@ -1,6 +1,8 @@
 ---
 - hosts: all
   become: yes
+  vars:
+    - dashboard_deploy_type: 'alternative'
   tasks:
     - name: install k3s
       include_tasks: tasks/install-k3s.yml
@@ -25,18 +27,8 @@
       delegate_to: 127.0.0.1
       become: false
 
-    - name: verify kubectl works from local
-      shell: kubectl --kubeconfig=.kubeconfig/k3s.yaml cluster-info
-      delegate_to: 127.0.0.1
-      become: false
-      register: cluster_result_local
-
     - name: install k8s dashboard
       include_tasks: tasks/install-dashboard.yml
 
-    - name: install nginx app
-      kubernetes.core.k8s:
-        kubeconfig: /etc/rancher/k3s/k3s.yaml
-        state: present
-        definition: "{{ item }}"
-      loop: "{{ lookup('file', 'k8-configs/app.nginx.yml') | from_yaml_all | list }}"
+    - name: install apps
+      include_tasks: tasks/install-apps.yml

@@ -1,0 +1,11 @@
+- name: gather apps
+  set_fact:
+    apps: "{{ apps|default([]) + (lookup('file', item) | from_yaml_all | list) }}"
+  loop: "{{ query('fileglob', 'localvm-apps/app.*.yml') }}"
+
+- name: install apps
+  kubernetes.core.k8s:
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+    state: present
+    definition: "{{ item }}"
+  loop: "{{ apps }}"

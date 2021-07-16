@@ -41,7 +41,7 @@
 
 - name: download dashboard manifest to the cluster.
   ansible.builtin.get_url:
-    url: "https://raw.githubusercontent.com/kubernetes/dashboard/{{ kube_version }}/aio/deploy/alternative.yaml"
+    url: "https://raw.githubusercontent.com/kubernetes/dashboard/{{ kube_version }}/aio/deploy/{{ dashboard_deploy_type | default('recommended') }}.yaml"
     dest: /tmp/kube-dashboard.yaml
     mode: '0664'
   when: dashboard_deployments|length == 0
@@ -73,5 +73,5 @@
     kubeconfig: /etc/rancher/k3s/k3s.yaml
     state: present
     definition: "{{ item }}"
-  loop: "{{ lookup('file', 'k8-configs/dashboard.yml') | from_yaml_all | list }}"
+  loop: "{{ lookup('file', 'localvm-apps/dashboard.yml') | from_yaml_all | list }}"
   when: dashboard_service_accounts|length == 0
