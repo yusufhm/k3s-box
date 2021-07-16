@@ -1,3 +1,4 @@
 .vagrant
 .kubeconfig
+.envrc
 Vagrantfile.local

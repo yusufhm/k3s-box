@@ -30,7 +30,7 @@ vagrant up
 ```
 That should automatically set up k3s in the VM and install the kube dashboard.
 
-If you use direnv, you can run `direnv allow` from inside the directory to ensure the `KUBECONFIG` variable is set to the `kubeconfig` file in the project directory. Then you can just use `kubectl` as usual
+If you use direnv, copy `.envrc.example` to `.envrc` and update values if required. Then run `direnv allow` from inside the directory to ensure the `KUBECONFIG` variable is set to the `kubeconfig` file in the project directory. Then you can just use `kubectl` as usual
 ```sh
 kubectl cluster-info
 ```

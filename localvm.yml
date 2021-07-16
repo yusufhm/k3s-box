@@ -16,7 +16,7 @@
     - name: download the kubeconfig file.
       fetch:
         src: /etc/rancher/k3s/k3s.yaml
-        dest: .kubeconfig/
+        dest: .kubeconfig/localvm.yaml
         flat: yes
 
     - name: replace the ip address in kubeconfig
