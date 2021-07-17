@@ -1,6 +1,6 @@
 - name: Provision the AWS k3s instance
   hosts: localhost
-  gather_facts: False
+  gather_facts: true
   tasks:
     - name: create ec2 instance
       include_tasks: tasks/ec2-create-instance.yml
@@ -9,13 +9,14 @@
   hosts: running
   gather_facts: false
   tasks:
-    - wait_for_connection:
+    - name: wait for ssh to come up
+      wait_for_connection:
         delay: "{{ (hostvars['localhost']['instances_launched'].changed or hostvars['localhost']['instances'].changed) | ternary(60, 0) }}"
         timeout: 180
 
 - name: configure instances
   hosts: running
-  become: yes
+  become: true
   gather_facts: true
   tasks:
     - name: install k3s
@@ -25,7 +26,7 @@
       fetch:
         src: /etc/rancher/k3s/k3s.yaml
         dest: .kubeconfig/ec2.yaml
-        flat: yes
+        flat: true
 
     - name: replace the ip address in kubeconfig
       replace:
@@ -35,8 +36,11 @@
       delegate_to: 127.0.0.1
       become: false
 
+    - name: install k8s dashboard
+      include_tasks: tasks/install-dashboard.yml
+
 - name: disable ssh access
   hosts: localhost
-  gather_facts: False
+  gather_facts: false
   tasks:
     - include_tasks: tasks/ec2-disable-ssh.yml

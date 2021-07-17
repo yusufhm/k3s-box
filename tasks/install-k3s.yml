@@ -8,10 +8,10 @@
     url: https://get.k3s.io
     dest: /tmp/k3s-installer
     mode: '0770'
-  when: k3s_bin.stat.exists == false
+  when: not k3s_bin.stat.exists
 
 - name: install k3s
-  shell: /tmp/k3s-installer
+  command: /tmp/k3s-installer
   args:
     creates: /usr/local/bin/k3s
   register: k3s_install_result

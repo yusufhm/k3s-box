@@ -4,8 +4,7 @@
       'kubernetes.core.k8s',
       kind='Deployment',
       namespace='kubernetes-dashboard',
-      kubeconfig='.kubeconfig/k3s.yaml'
-    ) }}"
+      kubeconfig='.kubeconfig/k3s.yaml') }}"
 
 # The following steps follow instructions from
 # https://rancher.com/docs/k3s/latest/en/installation/kube-dashboard/
@@ -31,7 +30,7 @@
   apt:
     name: python3-pip
     state: present
-    update_cache: yes
+    update_cache: true
   when: dashboard_deployments|length == 0
 
 - name: install the kubernetes library
@@ -65,8 +64,7 @@
       kind='ServiceAccount',
       namespace='kubernetes-dashboard',
       resource_name='admin-user',
-      kubeconfig='.kubeconfig/k3s.yaml'
-    ) }}"
+      kubeconfig='.kubeconfig/k3s.yaml') }}"
 
 - name: deploy additional dashboard configuration
   kubernetes.core.k8s:
@@ -74,4 +72,3 @@
     state: present
     definition: "{{ item }}"
   loop: "{{ lookup('file', 'localvm-apps/dashboard.yml') | from_yaml_all | list }}"
-  when: dashboard_service_accounts|length == 0

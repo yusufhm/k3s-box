@@ -1,24 +1,25 @@
-- amazon.aws.ec2_group:
+- name: configure security group
+  amazon.aws.ec2_group:
     name: k3s
     description: Rules for k3s
     rules:
       - proto: tcp
         ports:
-        - 22
+          - 22
         cidr_ip: "13.239.158.0/29"
         rule_desc: allow EC2_INSTANCE_CONNECT (Amazon EC2 console browser-based client)
       - proto: tcp
         ports:
-        - 80
+          - 80
         cidr_ip: 0.0.0.0/0
         rule_desc: allow all on port 80
       - proto: tcp
         ports:
-        - 443
+          - 443
         cidr_ip: 0.0.0.0/0
         rule_desc: allow all on port 443
       - proto: tcp
         ports:
-        - 6443
+          - 6443
         cidr_ip: 0.0.0.0/0
         rule_desc: allow all on port 6443 (kubernetes)

@@ -1,6 +1,6 @@
 ---
 - hosts: all
-  become: yes
+  become: true
   tasks:
     - name: install apps
       include_tasks: tasks/install-apps.yml

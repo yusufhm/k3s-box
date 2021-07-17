@@ -1,8 +1,9 @@
 ---
 - hosts: all
-  become: yes
+  become: true
   vars:
     - dashboard_deploy_type: 'alternative'
+    - kube_dashboard_enable_ingress: true
   tasks:
     - name: install k3s
       include_tasks: tasks/install-k3s.yml
@@ -10,14 +11,17 @@
     # Leaving this in even though we're using static IP, because the IP could
     # be changed in a Vagranfile.local.
     - name: get ip address
-      shell: ip address show eth1 | grep 'inet ' | sed -e 's/^.*inet //' -e 's/\/.*$//'
+      shell: |
+        set -o pipefail
+        ip address show eth1 | grep 'inet ' | sed -e 's/^.*inet //' -e 's/\/.*$//'
       register: ip_result
+      changed_when: true
 
     - name: download the kubeconfig file.
       fetch:
         src: /etc/rancher/k3s/k3s.yaml
         dest: .kubeconfig/localvm.yaml
-        flat: yes
+        flat: true
 
     - name: replace the ip address in kubeconfig
       replace:

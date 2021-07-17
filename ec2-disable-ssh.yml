@@ -1,5 +1,5 @@
 - name: disable ssh access
   hosts: localhost
-  gather_facts: False
+  gather_facts: false
   tasks:
     - include_tasks: tasks/ec2-disable-ssh.yml

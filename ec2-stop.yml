@@ -13,4 +13,4 @@
         state: stopped
         termination_protection: true
         vpc_subnet_id: subnet-378add71
-        wait: yes
+        wait: true
