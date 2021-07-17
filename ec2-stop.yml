@@ -1,0 +1,16 @@
+- name: stop instances
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: stop instances
+      amazon.aws.ec2:
+        group: k3s
+        image: ami-07aa5ef6af56f8da2
+        instance_tags:
+          Name: k3s
+        instance_type: t4g.micro
+        key_name: yusufhm
+        state: stopped
+        termination_protection: true
+        vpc_subnet_id: subnet-378add71
+        wait: yes

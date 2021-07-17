@@ -2,43 +2,41 @@
   hosts: localhost
   gather_facts: False
   tasks:
-    - name: get security groups
-      amazon.aws.ec2_group_info:
-        filters:
-          group-name: k3s
-      register: security_groups
+    - name: create ec2 instance
+      include_tasks: tasks/ec2-create-instance.yml
 
-    - name: create security group
-      amazon.aws.ec2_group:
-        name: k3s
-        description: Rules for k3s
-        rules:
-          - proto: tcp
-            ports:
-            - 22
-            cidr_ip: 0.0.0.0/0
-            rule_desc: allow all on port 22
-          - proto: tcp
-            ports:
-            - 80
-            cidr_ip: 0.0.0.0/0
-            rule_desc: allow all on port 80
-          - proto: tcp
-            ports:
-            - 443
-            cidr_ip: 0.0.0.0/0
-            rule_desc: allow all on port 443
-      when: security_groups.security_groups|length == 0
+- name: wait for SSH to come up
+  hosts: running
+  gather_facts: false
+  tasks:
+    - wait_for_connection:
+        delay: "{{ (hostvars['localhost']['instances_launched'].changed or hostvars['localhost']['instances'].changed) | ternary(60, 0) }}"
+        timeout: 180
 
-    - name: launch instance
-      amazon.aws.ec2:
-        group: k3s
-        image: ami-07aa5ef6af56f8da2
-        instance_tags:
-          Name: k3s
-        instance_type: t4g.micro
-        key_name: yusufhm
-        state: running
-        termination_protection: true
-        vpc_subnet_id: subnet-378add71
-        wait: yes
+- name: configure instances
+  hosts: running
+  become: yes
+  gather_facts: true
+  tasks:
+    - name: install k3s
+      include_tasks: tasks/install-k3s.yml
+
+    - name: download the kubeconfig file.
+      fetch:
+        src: /etc/rancher/k3s/k3s.yaml
+        dest: .kubeconfig/ec2.yaml
+        flat: yes
+
+    - name: replace the ip address in kubeconfig
+      replace:
+        path: .kubeconfig/ec2.yaml
+        regexp: '127.0.0.1'
+        replace: "{{ public_dns_name }}"
+      delegate_to: 127.0.0.1
+      become: false
+
+- name: disable ssh access
+  hosts: localhost
+  gather_facts: False
+  tasks:
+    - include_tasks: tasks/ec2-disable-ssh.yml

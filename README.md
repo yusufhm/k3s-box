@@ -14,14 +14,14 @@ Quickly set up and test [k3s](https://k3s.io/) locally.
 
 ## Get started
 
-Install the `openshift` python library
+Install python libraries
 ```sh
-pip install openshift
+pip install boto3 openshift
 ```
 
-Install the `kubernetes.core` Ansible Collection
+Install Ansible collections
 ```sh
-ansible-galaxy collection install kubernetes.core
+ansible-galaxy collection install -r requirements.yml
 ```
 
 After ensuring all requirements are installed and creating `Vagrantfile.local` as above, run

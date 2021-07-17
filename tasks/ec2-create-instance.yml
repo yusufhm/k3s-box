@@ -1,0 +1,72 @@
+- name: get this machine's ip
+  community.general.ipify_facts:
+  register: public_ip
+
+- name: create security group
+  amazon.aws.ec2_group:
+    name: k3s
+    description: Rules for k3s
+    rules:
+      - proto: tcp
+        ports:
+        - 22
+        cidr_ip: "{{ public_ip.ansible_facts.ipify_public_ip }}/32"
+        rule_desc: allow ansible controller on port 22
+      - proto: tcp
+        ports:
+        - 22
+        cidr_ip: "13.239.158.0/29"
+        rule_desc: allow EC2_INSTANCE_CONNECT (Amazon EC2 console browser-based client)
+      - proto: tcp
+        ports:
+        - 80
+        cidr_ip: 0.0.0.0/0
+        rule_desc: allow all on port 80
+      - proto: tcp
+        ports:
+        - 443
+        cidr_ip: 0.0.0.0/0
+        rule_desc: allow all on port 443
+      - proto: tcp
+        ports:
+        - 6443
+        cidr_ip: 0.0.0.0/0
+        rule_desc: allow all on port 6443 (kubernetes)
+  register: secgroup
+
+- name: launch instance
+  amazon.aws.ec2:
+    group: k3s
+    image: ami-07aa5ef6af56f8da2
+    instance_tags:
+      Name: k3s
+    instance_type: t4g.micro
+    key_name: yusufhm
+    exact_count: 1
+    count_tag:
+      Name: k3s
+    termination_protection: true
+    vpc_subnet_id: subnet-378add71
+    wait: true
+  register: instances_launched
+
+- name: ensure instance is running
+  amazon.aws.ec2:
+    group: k3s
+    image: ami-07aa5ef6af56f8da2
+    instance_tags:
+      Name: k3s
+    instance_type: t4g.micro
+    key_name: yusufhm
+    state: "{{ (secgroup.changed) | ternary('restarted', 'running') }}"
+    termination_protection: true
+    vpc_subnet_id: subnet-378add71
+    wait: yes
+  register: instances
+
+- name: add new instance to host group
+  add_host:
+    hostname: "{{ item.public_dns_name }}"
+    groupname: running
+    ansible_user: ubuntu
+  loop: "{{ instances.instances }}"

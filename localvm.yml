@@ -21,7 +21,7 @@
 
     - name: replace the ip address in kubeconfig
       replace:
-        path: .kubeconfig/k3s.yaml
+        path: .kubeconfig/localvm.yaml
         regexp: '127.0.0.1'
         replace: "{{ ip_result.stdout }}"
       delegate_to: 127.0.0.1
