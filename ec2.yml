@@ -18,6 +18,8 @@
   hosts: running
   become: true
   gather_facts: true
+  vars:
+    - kubeconfig_path: '.kubeconfig/ec2.yaml'
   tasks:
     - name: install k3s
       include_tasks: tasks/install-k3s.yml
@@ -25,12 +27,12 @@
     - name: download the kubeconfig file.
       fetch:
         src: /etc/rancher/k3s/k3s.yaml
-        dest: .kubeconfig/ec2.yaml
+        dest: "{{ kubeconfig_path }}"
         flat: true
 
     - name: replace the ip address in kubeconfig
       replace:
-        path: .kubeconfig/ec2.yaml
+        path: "{{ kubeconfig_path }}"
         regexp: '127.0.0.1'
         replace: "{{ public_dns_name }}"
       delegate_to: 127.0.0.1

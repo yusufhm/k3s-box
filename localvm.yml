@@ -4,6 +4,7 @@
   vars:
     - dashboard_deploy_type: 'alternative'
     - kube_dashboard_enable_ingress: true
+    - kubeconfig_path: '.kubeconfig/localvm.yaml'
   tasks:
     - name: install k3s
       include_tasks: tasks/install-k3s.yml
@@ -20,12 +21,12 @@
     - name: download the kubeconfig file.
       fetch:
         src: /etc/rancher/k3s/k3s.yaml
-        dest: .kubeconfig/localvm.yaml
+        dest: "{{ kubeconfig_path }}"
         flat: true
 
     - name: replace the ip address in kubeconfig
       replace:
-        path: .kubeconfig/localvm.yaml
+        path: "{{ kubeconfig_path }}"
         regexp: '127.0.0.1'
         replace: "{{ ip_result.stdout }}"
       delegate_to: 127.0.0.1
