@@ -71,4 +71,4 @@
     kubeconfig: /etc/rancher/k3s/k3s.yaml
     state: present
     definition: "{{ item }}"
-  loop: "{{ lookup('template', 'localvm-apps/dashboard.yml.j2') | from_yaml_all | list }}"
+  loop: "{{ lookup('template', 'templates/kube-dashboard.yml.j2') | from_yaml_all | list }}"
