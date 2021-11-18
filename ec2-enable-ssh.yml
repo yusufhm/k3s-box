@@ -1,0 +1,5 @@
+- name: enable ssh access
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - include_tasks: tasks/ec2-enable-ssh.yml
